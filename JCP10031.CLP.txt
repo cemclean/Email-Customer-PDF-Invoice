@@ -1,0 +1,23 @@
+/*-------------------------------------------------------------------*/         
+/*                                                                   */         
+/* Update DTAARA CP1003 - Email Address For PDF Invoices             */         
+/*                                                                   */         
+/* CC27512 09.30.2009 Charlie McLean                                 */         
+/*         Project started.                                          */         
+/*                                                                   */         
+/*-------------------------------------------------------------------*/         
+ START:      PGM                                                                
+                                                                                
+             DCLF       FILE(VCP10031)                                          
+                                                                                
+             CHGVAR     VAR(&IN03) VALUE('0')                                   
+             RTVDTAARA  DTAARA(CP10031A) RTNVAR(&NAME)                          
+             RTVDTAARA  DTAARA(CP10031B) RTNVAR(&ADDRESS)                       
+             RTVDTAARA  DTAARA(CP10031C) RTNVAR(&SUBJECT)                       
+ DISPLAY:    SNDRCVF    RCDFMT(CP10031)                                         
+             IF         COND(&IN03 = '1') THEN(GOTO CMDLBL(END))                
+             CHGDTAARA  DTAARA(CP10031A) VALUE(&NAME)                           
+             CHGDTAARA  DTAARA(CP10031B) VALUE(&ADDRESS)                        
+             CHGDTAARA  DTAARA(CP10031C) VALUE(&SUBJECT)                        
+                                                                                
+ END:        ENDPGM                                                             

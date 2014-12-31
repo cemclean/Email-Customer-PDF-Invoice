@@ -1,0 +1,318 @@
+      *-----------------------------------------------------------------                            
+      *                                                                                             
+      * Email PDF Invoices                                                                          
+      *                                                                                             
+      * CC27512 09.24.2009 Charlie McLean                                                           
+      *         Project started                                                                     
+      *                                                                                             
+      * T23295  08.02.2012 T20120424.0020 Charlie McLean                                            
+      *         Added bug-out if more than 50 attachments (invoices)                                
+      *                                                                                             
+      * T23312  12.07.2012 Charlie McLean                                                           
+      *         Chg'd qty to 30 attachments                                                         
+      *                                                                                             
+      * T23354  11.11.2013 Charlie McLean                                                           
+      *         Re-wrote main section using new logicals                                            
+      *         chg'd max attachments to 15 from 30                                                 
+      *         11.18.2103 Charlie McLean                                                           
+      *         chg'd DOU %EOF to DW NOT %EOF so job will not                                       
+      *         err when no records are present                                                     
+      *                                                                                             
+      *-----------------------------------------------------------------                            
+     h option(*srcstmt:*nodebugio)                                                                  
+      *         P1 PDF invoice ready to mail (P1FLAG = P)                                           
+     FFCP1001L1 uf a e           k disk                                                             
+      *         P1 PDF invoice single email batch (P1Flag = B)                                      
+     FFCP1001L2 uf a e           k disk    rename(ICP1001:ICP1001B)                                 
+     F                                     usropn                                                   
+      * CIF supplemental data base - Narrative                                                      
+     FF01093LA  IF   E           K disk                                                             
+      *                                                                                             
+     dmypsds          SDS                                                                           
+     d $$jobn                244    253                                                             
+     d $$user                254    263                                                             
+                                                                                                    
+     d EMLSTMF         PR                  ExtPgm('QCMDEXC')                                        
+     d  CmdString                  3000    Options(*Varsize)                                        
+     d                                     Const                                                    
+     d  CmdLength                    15P 5 Const                                                    
+     d                                3    Options(*Nopass)                                         
+     d                                     Const                                                    
+     d Send            s           3000                                                             
+     d p4a             s              4                                                             
+     d p4b             s             80                                                             
+     d p4c             s             80                                                             
+     d pos1            s              4  0                                                          
+     d pos2            s              4  0                                                          
+     d start2          s              4  0                                                          
+     d start3          s              4  0                                                          
+     d long            s              4  0                                                          
+     d ##an8           s              8  0                                                          
+     d a3k1            s              8  0                                                          
+     d a3k2            s              2                                                             
+     d a3k3            s              3                                                             
+     d $$pid           c                   'PCP1003'                                                
+     d $$upmj          s              6  0                                                          
+     d $$tday          s              6  0                                                          
+                                                                                                    
+     d $$rtn           s              2                                                             
+     d $$prtf          s              1                                                             
+     d $$rtxt          s             40                                                             
+     d $$rtxt10        c                   'Email sent'                                             
+     d $$rtxt50        c                   'No email address found'                                 
+     d $$rtxt51        c                   'Incomplete email address'                               
+     d $$rtxt52        c                   'Problem with sending mail'                              
+     d $$count         s              3  0                                                          
+                                                                                                    
+     d CP10031A        s             80    dtaara                                                   
+     d CP10031B        s             80    dtaara                                                   
+     d CP10031C        s             80    dtaara                                                   
+     d p1              s             80                                                             
+     d p2              s             80                                                             
+     d p3              s             80                                                             
+     d p4              s             80                                                             
+     d p5              s             80                                                             
+                                                                                                    
+      * read thru FCP1001 for invoice PDFs not sent                                                 
+     c                   read      FCP1001L1                                                        
+     c  n98              exsr      s999                                                             
+      /Free                                                                                         
+        dow NOT %EOF(FCP1001L1);                                                                    
+                                                                                                    
+          if P1AN8 <> ##an8;                // new customer                                         
+            if $$rtn = '10';                // no address errors                                    
+              exsr s005;                    // email                                                
+              $$prtf = ' ';                                                                         
+            endif;                                                                                  
+            exsr s007;                      // update batch                                         
+            ##an8 = P1AN8;                                                                          
+            exsr s001;                      // start command string                                 
+            exsr s002;                      // get customer address                                 
+            exsr s003;                      // complete address string                              
+            $$count = 0;                                                                            
+          endif;                                                                                    
+                                                                                                    
+          if $$rtn = '10';                  // no address errors                                    
+            exsr s004;                      // add attachment                                       
+            P1PRTF = 'B';                   // add record to this batch                             
+            $$count = $$count +1;                                                                   
+          else;                             // leave P1PRTF as is                                   
+          endif;                                                                                    
+          exsr s006;                        // update field values                                  
+          update iCP1001;                                                                           
+                                                                                                    
+          if $$count >= 15;                 // max 15 attachments                                   
+            exsr s005;                      // email                                                
+            if $$rtn = '10';                  // no address errors                                  
+              $$prtf = ' ';                                                                         
+            endif;                                                                                  
+            exsr s007;                      // update batch                                         
+            exsr s001;                      // start command string                                 
+            exsr s002;                      // get customer address                                 
+            exsr s003;                      // complete address string                              
+            $$count = 0;                                                                            
+          endif;                                                                                    
+                                                                                                    
+          read FCP1001L1;                                                                           
+        enddo;                                                                                      
+                                                                                                    
+        if $$count >= 1;                    // last email                                           
+          exsr s005;                        // email                                                
+          exsr s007;                        // update batch                                         
+        endif;                                                                                      
+        *inlr = *on;                                                                                
+                                                                                                    
+      /End-Free                                                                                     
+                                                                                                    
+                                                                                                    
+     c*                  move      *on           *inlr                                              
+      * subroutines -----------------------------------------------------                           
+      * ------------------------------------------------------------ S001                           
+      * start command string                                                                        
+      *                                                                                             
+     c     s001          begsr                                                                      
+      * build first part of the command string                                                      
+     c                   eval        Send = '*LIBL/EMLSTMF +                                        
+     c                               subject(''' + %trim(p1) + ''') +                               
+     c                               fromname(''' + %trim(p2) + ''') +                              
+     c                               fromaddr(''' + %trim(p3) + ''') +                              
+     c                               to('                                                           
+     c     e001          endsr                                                                      
+                                                                                                    
+      * ------------------------------------------------------------ S002                           
+      * get send-to address(s) for this customer                                                    
+      *                                                                                             
+     c     s002          begsr                                                                      
+      * initialize update values for FCP1001                                                        
+     c                   eval      $$prtf = ' '                                                     
+     c                   eval      $$rtn  = '10'                                                    
+     c                   eval      $$rtxt = $$rtxt10                                                
+     c                   exsr      s006                                                             
+      * get address(s) for this customer                                                            
+     c                   move      *blanks       a3k1                                               
+     c                   move      *blanks       a3k2                                               
+     c                   move      *blanks       a3k3                                               
+     c                   z-add     P1AN8         a3k1                                               
+     c                   move      'EM'          a3k2                                               
+     c                   movel     'C'           a3k2                                               
+     c     a3key         setll     F01093LA                                                         
+     c     s002a         tag                                                                        
+     c                   reade     F01093LA                             3536                        
+     c     *IN35         ifeq      *ON                                                              
+     c     *IN36         oreq      *ON                                                              
+     c                   goto      s002b                                                            
+     c                   endif                                                                      
+                                                                                                    
+     c                   move      *blanks       p4a                                                
+     c                   move      *blanks       p4b                                                
+     c                   move      *blanks       p4c                                                
+     c                   move      *blanks       p4                                                 
+     c                   movel     A3DS80        p4                                                 
+                                                                                                    
+     c                   monitor                                                                    
+      * parse to-address, email/name/*TO                                                            
+     c     '/'           scan      p4            pos1                     90                        
+     c     *in90         ifeq      *on                                                              
+     c                   eval      long=(pos1-1)                                                    
+     c     long          subst     p4:1          p4c                                                
+     c                   eval      start2=(pos1+1)                                                  
+     c     '/'           scan      p4:start2     pos2                     90                        
+     c     *in90         ifeq      *on                                                              
+     c                   eval      long=(pos2-start2)                                               
+     c     long          subst     p4:start2     p4b                                                
+     c                   eval      start3=(pos2+1)                                                  
+     c                   eval      long=(%len(p4)-pos2)                                             
+     c     long          subst     p4:start3     p4a                                                
+     c                   endif                                                                      
+     c                   endif                                                                      
+     c                   on-error                                                                   
+     c                   eval      $$prtf = '1'                                                     
+     c                   eval      $$rtn  = '51'                                                    
+     c                   eval      $$rtxt = $$rtxt51                                                
+     c                   exsr      s006                                                             
+     c                   goto      e002                                                             
+     c                   endmon                                                                     
+      * re-assemble with tic marks and add to command string                                        
+     c                   eval        Send = %trim(Send) + ' ''' +                                   
+     c                               %trim(p4c) + '''/''' +                                         
+     c                               %trim(p4b) + '''/' +                                           
+     c                               %trim(p4a)                                                     
+     c                   goto      s002a                                                            
+     c     s002b         tag                                                                        
+      * set error condition if no address is found                                                  
+     c     p4            ifeq      ' '                                                              
+     c                   eval      $$prtf = '1'                                                     
+     c                   eval      $$rtn  = '50'                                                    
+     c                   eval      $$rtxt = $$rtxt50                                                
+     c                   exsr      s006                                                             
+     c                   endif                                                                      
+      * set error condition for missing parts                                                       
+     c     p4a           ifeq      ' '                                                              
+     c     p4b           oreq      ' '                                                              
+     c     p4c           oreq      ' '                                                              
+     c                   eval      $$prtf = '1'                                                     
+     c                   eval      $$rtn  = '51'                                                    
+     c                   eval      $$rtxt = $$rtxt51                                                
+     c                   exsr      s006                                                             
+     c                   endif                                                                      
+     c     e002          endsr                                                                      
+                                                                                                    
+      * ------------------------------------------------------------ S003                           
+      * finish address portion of command string                                                    
+      *                                                                                             
+     c     s003          begsr                                                                      
+     c                   eval        Send = %trim(Send) + ') stmf('                                 
+     c     e003          endsr                                                                      
+                                                                                                    
+      * ------------------------------------------------------------ S004                           
+      * add PDF invoice attachments                                                                 
+      *                                                                                             
+     c     s004          begsr                                                                      
+     c                   eval        Send = %trim(Send) +                                           
+     c                               ' ''' + %trim(P1PTNM) + ''''                                   
+     c     e004          endsr                                                                      
+                                                                                                    
+      * ------------------------------------------------------------ S005                           
+      * complete command string and send email                                                      
+      *                                                                                             
+     c     s005          begsr                                                                      
+     c                   monitor                                                                    
+     c                   eval        Send = %trim(Send) + ') +                                      
+     c                               msgm(jdeobjp/sersrc/cp1003.01)'                                
+                                                                                                    
+     c                   CallP       EMLSTMF(Send : %Len(Send))                                     
+     c                   on-error                                                                   
+     c                   eval      $$prtf = '1'                                                     
+     c                   eval      $$rtn  = '52'                                                    
+     c                   eval      $$rtxt = $$rtxt52                                                
+     c                   exsr      s006                                                             
+     c                   goto      e005                                                             
+     c                   endmon                                                                     
+     c     e005          endsr                                                                      
+                                                                                                    
+      * ------------------------------------------------------------ S006                           
+      * initialize update values for FCP1001                                                        
+      *                                                                                             
+     c     s006          begsr                                                                      
+      /Free                                                                                         
+        P1RTN  = $$rtn;                     // error return code                                    
+        P1RTXT = $$rtxt;                    // error return text                                    
+        P1USER = $$user;                    // update user                                          
+        P1PID  = $$pid;                     // program id                                           
+        P1JOBN = $$jobn;                    // job number                                           
+        P1UPMJ = $$upmj;                    // date updated                                         
+        P1TDAY = $$tday;                    // time updated                                         
+      /End-Free                                                                                     
+     c     e006          endsr                                                                      
+                                                                                                    
+      * ------------------------------------------------------------ S007                           
+      * update status fields in FCP1001                                                             
+      *                                                                                             
+     c     s007          begsr                                                                      
+      /Free                                                                                         
+        open FCP1001L2;                                                                             
+        read FCP1001L2;                                                                             
+        dou %eof(FCP1001L2);                                                                        
+          P1PRTF = $$prtf;                                                                          
+          exsr s006;                        // update field values                                  
+          update iCP1001B;                                                                          
+          read FCP1001L2;                                                                           
+        enddo;                                                                                      
+        close FCP1001L2;                                                                            
+      /End-Free                                                                                     
+     c     e007          endsr                                                                      
+                                                                                                    
+      * ------------------------------------------------------------ S999                           
+      * initial processing                                                                          
+      *                                                                                             
+     c     s999          begsr                                                                      
+      *                                                                                             
+     c*    P1KEY         KLIST                                                                      
+     c*                  KFLD                    P1PRTF                                             
+     c*                  KFLD                    P1AN8                                              
+      *                                                                                             
+     c     A3KEY         KLIST                                                                      
+     c                   KFLD                    a3k1                                               
+     c                   KFLD                    a3k2                                               
+     c                   KFLD                    a3k3                                               
+                                                                                                    
+      * get from-name & from-address, subject                                                       
+      /free                                                                                         
+         in *dtaara;                                                                                
+      /end-free                                                                                     
+     c                   eval      p2=%trim(CP10031A)                                               
+     c                   eval      p3=%trim(CP10031B)                                               
+     c                   eval      p1=%trim(CP10031C)                                               
+                                                                                                    
+      * time and julian date                                                                        
+     c                   time                    $$tday                                             
+     c                   eval      $$upmj=%int(%Char(%date(udate:*mdy)                              
+     c                                     :*longjul0)) - 1900000                                   
+      * start email for first customer                                                              
+     c                   exsr      S001                                                             
+     c                   exsr      S002                                                             
+     c                   exsr      S003                                                             
+     c                   eval      ##an8 = P1AN8                                                    
+      * initial processin is complete                                                               
+     c                   move      *ON           *IN98                                              
+     c     e999          endsr                                                                      

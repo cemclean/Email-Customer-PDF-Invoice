@@ -1,0 +1,201 @@
+/*--------------------------------------------------------------------+         
+ *                                                                   *+         
+ * Create PDF - Sales Invoices                                       *+         
+ *   Rename PDF:    {order number}-{invoice number}                  *+         
+ *   Move PDF:      \DocArchive\Invoices by Year\2009                *+         
+ *   Chg Authority: *Public *R                                       *+         
+ *   Manage Spool:  Move to OUTQ PRT11i Rlease *YES                  *+         
+ *   Log File:      Write to FCP1001 for later email                 *+         
+ *   Email:         No                                               *+         
+ *                                                                   *+         
+ *   Data Queue:   from long variable  text                          *+         
+ *                    1  752 &PDFQUE   Full PDF data queue           *+         
+ *                   15   26           Qualified job name            *+         
+ *                   15   10 &JOBNAM   Job name                      *+         
+ *                   25   10 &USER     User name                     *+         
+ *                   35    6 &JOBNBR   Job number                     +         
+ *                   41   10 &FILE     Spool file name                +         
+ *                   53    4 &SPLNBRB  Spool file number (binary)     +         
+ *                   57  250           Mail tag                       +         
+ *                   57   17 &NEWNAM   New name of PDF                +         
+ *                   74    2 &DCT      Invoice doc type               +         
+ *                  307  340           From Path and name             +         
+ *             i.e. \DocArchive\Invoices\JN00000105\SEROPR            +         
+ *                  408094_000121_R5542565_07062009_000001.PDF        +         
+ *                                                                    +         
+ * CC27295 07.06.2009 Charlie McLean                                  +         
+ *         Project started                                            +         
+ *                                                                    +         
+ * CC27512 09.19.2009 Charlie McLean                                  +         
+ *         Added PDF log file for later batch emailing                +         
+ *                                                                    +         
+ * CC27587 10.15.2009 Charlie McLean                                  +         
+ *         Added invoice doc type                                     +         
+ *                                                                    +         
+ *-------------------------------------------------------------------*/         
+                                                                                
+ START:      PGM                                                                
+                                                                                
+             DCL        &FLDLEN  *DEC  LEN(5 0) VALUE(752)                      
+             DCL        &PDFQUE  *CHAR LEN(752) /*PDF data queue     */         
+             DCL        &JOBNAM  *CHAR LEN(10)  /* job name          */         
+             DCL        &USER    *CHAR LEN(10)  /* user              */         
+             DCL        &JOBNBR  *CHAR LEN(6)   /* job number        */         
+             DCL        &FILE    *CHAR LEN(10)  /* spool file name   */         
+             DCL        &SPLNBRB *CHAR LEN(4)   /* splf nbr binary   */         
+             DCL        &SPLNBRD *DEC  LEN(6)   /* splf nbr decimal  */         
+             DCL        &MAILTG  *CHAR LEN(250) /* mail tag          */         
+             DCL        &PATHNM  *CHAR LEN(340) /* old path and name */         
+/* 27512 */  DCL        &PDFN    *CHAR LEN(17)  /* PDF name frm tag  */         
+/* 27512 */  DCL        &PTHNMN  *CHAR LEN(256) /* new path and name */         
+/* 27512 */  DCL        &PRTF    *CHAR LEN(1)   /* print flag        */         
+             DCL        &TOQUE   *CHAR LEN(10)  /* move to outq name */         
+                                                                                
+             DCL        &PATHN   *CHAR LEN(200) /* null              */         
+             DCL        &PATH1   *CHAR LEN(200) /* path part 1       */         
+             DCL        &PATH2   *CHAR LEN(200) /* path part 2       */         
+             DCL        &PATH3   *CHAR LEN(200) /* path part 3       */         
+             DCL        &PATH4   *CHAR LEN(200) /* path part 4       */         
+             DCL        &OLDPTH  *CHAR LEN(256) /* complete path     */         
+             DCL        &OLDNAM  *CHAR LEN(200) /* old PDF name      */         
+             DCL        &PARMS   *DEC  LEN(3 0) VALUE(5) +                      
+                          /* number of parms for PARSE               */         
+                                                                                
+             DCL        &WNAM    *CHAR LEN(128) /* PDF name frm QUEUE*/         
+             DCL        &NEWNAM  *CHAR LEN(128) /* new PDF name      */         
+             DCL        &DCT     *CHAR LEN(2)   /* invoice doc typte */         
+             DCL        &NEWERR  *CHAR LEN(128) /* new if error      */         
+             DCL        &TODIR   *CHAR LEN(256) +                               
+                 VALUE('\DocArchive\Invoices by Year\')                         
+             DCL        &TODIRA  *CHAR LEN(256) +                               
+                 VALUE('/DocArchive/Invoices by Year/')                         
+                                                                                
+             DCL        &WAIT    *DEC  LEN(5 0) VALUE(1)                        
+                                                                                
+             DCL &SIDAT     *CHAR LEN(25) VALUE(*TODAY)                         
+             DCL &CTRY      *CHAR LEN(2)                                        
+             DCL &FFMT      *CHAR LEN(8)  VALUE(*SYSVAL)                        
+             DCL &OFSET     *CHAR LEN(6)  VALUE(*NONE)                          
+             DCL &INTVL     *CHAR LEN(8)  VALUE(*DAY)                           
+             DCL &TFMT      *CHAR LEN(8)  VALUE(*YEAR4)                         
+             DCL &YEAR      *CHAR LEN(6)                                        
+             DCL &ERROR     *CHAR LEN(1)                                        
+             DCL &JOB       *CHAR LEN(10)                                       
+             DCL &USER      *CHAR LEN(10)                                       
+                                                                                
+             CALLSUBR   SUBR(S999) /* initial setup                  */         
+                                                                                
+/* read dataq for next PDF to process                                */         
+ OMT:        CALL       PGM(QRCVDTAQ) PARM(CP1001 QGPL &FLDLEN +                
+                          &PDFQUE &WAIT)                                        
+             IF         COND(&PDFQUE = ' ') THEN(GOTO CMDLBL(END))              
+                                                                                
+             CALLSUBR   SUBR(S001) /* parse data queue fields        */         
+                                                                                
+             CALLSUBR   SUBR(S002) /* rename PDF and move            */         
+                                                                                
+/* create log entry for PDF created  CC27512                         */         
+             CHGVAR     VAR(&PDFN) VALUE(&WNAM)                                 
+             CHGVAR     VAR(&PTHNMN) VALUE(&TODIRA *TCAT '/' *TCAT +            
+                          &NEWNAM) /* new PDF path and name          */         
+/* 27587 */  CALL       PGM(PCP1001) PARM(&PDFN &PTHNMN &PRTF &JOB +            
+                          &USER &DCT)                                           
+                                                                                
+             IF         COND(&PRTF = '1') THEN(CALLSUBR SUBR(S003)) +           
+                          /* move spool to active printer */                    
+                                                                                
+             CHGVAR     VAR(&PDFQUE) VALUE(' ')                                 
+             CHGVAR     VAR(&PRTF) VALUE(' ')                                   
+             GOTO       CMDLBL(OMT)                                             
+                                                                                
+/*------------------------------------------------------------------- +         
+ * S001 - parse standard fields from PDF data queue                   +         
+ *                                                                   */         
+             SUBR       SUBR(S001)                                              
+             CHGVAR     VAR(&JOBNAM)  VALUE(%SST(&PDFQUE 15   10))              
+             CHGVAR     VAR(&USER)    VALUE(%SST(&PDFQUE 25   10))              
+             CHGVAR     VAR(&JOBNBR)  VALUE(%SST(&PDFQUE 35    6))              
+             CHGVAR     VAR(&FILE)    VALUE(%SST(&PDFQUE 41   10))              
+             CHGVAR     VAR(&SPLNBRB) VALUE(%SST(&PDFQUE 53    4))              
+             CHGVAR     VAR(&MAILTG)  VALUE(%SST(&PDFQUE 57  250))              
+             CHGVAR     VAR(&PATHNM)  VALUE(%SST(&PDFQUE 307 340))              
+             CHGVAR     VAR(&SPLNBRD) VALUE(%BIN(&SPLNBRB))                     
+ E001:       ENDSUBR                                                            
+/*--------------------------------------------------------------------+         
+ * S002 - rename PDF based on value in mail tag                       +         
+ *        move PDF to single location                                 +         
+ *        change authority of *PUBLIC to PDF                          +         
+ *                                                                   */         
+             SUBR       SUBR(S002)                                              
+/* new PDF name is first 17 characters of mail tag                   */         
+             CHGVAR     VAR(&WNAM)   VALUE(%SST(&MAILTG  1   17))               
+             CHGVAR     VAR(&NEWNAM) VALUE(&WNAM *TCAT '.PDF')                  
+             CHGVAR     VAR(&NEWERR) VALUE(&WNAM *TCAT '-ERROR.PDF')            
+/* invoice doc type is the next two characters of the mail tag       */         
+/* 27587 */  CHGVAR     VAR(&DCT)    VALUE(%SST(&MAILTG 18    2))               
+/* get PDF old name w/TAATOOL PARSE                                  */         
+             PARSE      INPVAL(&PATHNM) SEPARATOR('/') +                        
+                          RTNCNT(&PARMS) RTNVAL1(&PATHN) +                      
+                          RTNVAL2(&PATH1) RTNVAL3(&PATH2) +                     
+                          RTNVAL4(&PATH3) RTNVAL5(&PATH4) +                     
+                          RTNVAL6(&OLDNAM)                                      
+/* build up old path name from parse                                 */         
+             CHGVAR     VAR(&OLDPTH) VALUE('\' *TCAT &PATH1 *TCAT +             
+                          '\' *TCAT &PATH2 *TCAT '\' *TCAT &PATH3 +             
+                          *TCAT '\' *TCAT &PATH4)                               
+/* rename PDF                                                        */         
+             CD         DIR(&OLDPTH)                                            
+             MONMSG     MSGID(CPFA0A9)                                          
+             RNM        OBJ(&OLDNAM) NEWOBJ(&NEWNAM)                            
+             MONMSG     MSGID(CPFA0A9)          /* object not found  */         
+             MONMSG     MSGID(CPFA0A0) EXEC(DO) /* object exists     */         
+             RNM        OBJ(&OLDNAM) NEWOBJ(&NEWERR)                            
+             MONMSG     MSGID(CPFA0A0)                                          
+             MONMSG     MSGID(CPFA0A9)                                          
+             ENDDO                                                              
+/* change *PUBLIC authority to read only                             */         
+             CHGAUT     OBJ(&NEWNAM) USER(*PUBLIC) DTAAUT(*R)                   
+             MONMSG     MSGID(CPF0000 CPE0000 CPD0000 CPFA0A9)                  
+             CHGAUT     OBJ(&NEWERR) USER(*PUBLIC) DTAAUT(*R)                   
+             MONMSG     MSGID(CPF0000 CPE0000 CPD0000 CPFA0A9)                  
+/* move new PDF to /DocArchive/Invoices by year/2009                 */         
+             MOV        OBJ(&NEWNAM) TODIR(&TODIR)                              
+             MONMSG     MSGID(CPFA0A0)                                          
+             MONMSG     MSGID(CPFA0A9) EXEC(DO) /* object not found  */         
+/* if error move error PDF                                           */         
+             MOV        OBJ(&NEWERR) TODIR(&TODIR)                              
+             MONMSG     MSGID(CPFA0A0)                                          
+             MONMSG     MSGID(CPFA0A9)                                          
+             ENDDO                                                              
+ E002:       ENDSUBR                                                            
+/*--------------------------------------------------------------------+         
+ * S003 - move spool to active printer                                +         
+ *                                                                   */         
+             SUBR       SUBR(S003)                                              
+             CHGVAR     VAR(&TOQUE) VALUE('PRT11I')                             
+/* move the spool file to a real printer and make ready              */         
+             CHGSPLFA   FILE(&FILE) JOB(&JOBNBR/&USER/&JOBNAM) +                
+                          SPLNBR(&SPLNBRD) OUTQ(&TOQUE)                         
+             MONMSG     MSGID(CPF3344) /* no longer in system        */         
+             MONMSG     MSGID(CPF3341) /* file not changed           */         
+             RLSSPLF    FILE(&FILE) JOB(&JOBNBR/&USER/&JOBNAM) +                
+                          SPLNBR(&SPLNBRD)                                      
+             MONMSG     MSGID(CPF3344) /* no longer in system        */         
+             MONMSG     MSGID(CPF3322) /* not released               */         
+ E003:       ENDSUBR                                                            
+/*--------------------------------------------------------------------+         
+ * S999 - initial setup                                               +         
+ *                                                                   */         
+             SUBR       SUBR(S999)                                              
+             CHGJOB     LOG(4 0 *SECLVL) LOGCLPGM(*YES)                         
+/*           CHGJOB     LOG(0 99 *NOLIST) LOGCLPGM(*NO)              */         
+/* get year value, ie 2009                                           */         
+             CALL X0027 PARM(&SIDAT &CTRY &FFMT &OFSET &INTVL &YEAR +           
+                          &TFMT &ERROR)                                         
+/* test      CHGVAR     VAR(&YEAR) VALUE('2010')                     */         
+             CHGVAR     VAR(&TODIR) VALUE(&TODIR *TCAT &YEAR)                   
+             CHGVAR     VAR(&TODIRA) VALUE(&TODIRA *TCAT &YEAR)                 
+             RTVJOBA    JOB(&JOB) USER(&USER)                                   
+ E999:       ENDSUBR                                                            
+                                                                                
+ END:        ENDPGM                                                             

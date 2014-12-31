@@ -1,0 +1,34 @@
+/*-------------------------------------------------------------------*/         
+/*                                                                   */         
+/*  Create PDF - Calling Program, Never Ending                       */         
+/*                                                                   */         
+/*  CC27295 08.10.2009 Charlie McLean                                */         
+/*          Project started                                          */         
+/*                                                                   */         
+/*  CC27460 09.04.2009 Charlie McLean                                */         
+/*          Added JCP1002                                            */         
+/*                                                                   */         
+/*  T23253  08.08.2011 Charlie McLean                                */         
+/*          Added JCP1003                                            */         
+/*                                                                   */         
+/*-------------------------------------------------------------------*/         
+                                                                                
+ START:      PGM                                                                
+                                                                                
+             DCL        VAR(&DLYSEC) TYPE(*DEC) LEN(4 0) VALUE(60)              
+                                                                                
+             CHGJOB     LOG(0 99 *NOLIST) LOGCLPGM(*NO) +                       
+                          JOBMSGQFL(*WRAP)                                      
+                                                                                
+/* set library list                                                  */         
+             CALL       PGM(J56LIBL) PARM('PRODA73')                            
+                                                                                
+ OMT:        CALL       PGM(JCP1001) /* Sales Invoices               */         
+             CALL       PGM(JCP1002) /* BRMS Reports                 */         
+             CALL       PGM(JCP1007) /* Mail PDF To Spool Creator    */         
+             CALL       PGM(JCP1008) /* Email DreamWriter Report     */         
+                                                                                
+             DLYJOB     DLY(&DLYSEC)                                            
+             GOTO       CMDLBL(OMT)                                             
+                                                                                
+ END:        ENDPGM                                                             

@@ -1,0 +1,554 @@
+     A****************************************************************          
+     A*    (JDE) Report Design Aid                                   *          
+     A*                                                              *          
+     A*    Created By : JRUBINO                                      *          
+     A*    Date       : 05/31/00                                     *          
+     A*    Time       : 182015                                       *          
+     A*    Program    : INVOICES                                     *          
+     A*                                                              *          
+     A****************************************************************          
+     A*                                                              *          
+27295 *  CHGPRTF FILE(R5542565) DEVTYPE(*AFPDS) PAGESIZE(66 120)                
+27295 *  LPI(6) CPI(15) OVRFLW(62) DRAWER(100) FONT(*CPI)                       
+27954 *  FRONTOVL(QGPL/INV005 0.0 0.0) OUTQ(QUSRSYS/TSTPDF)                     
+27295 *  SAVE(*YES)                                                             
+27295 *                                                                         
+     A****************************************************************          
+     A* S10006042 10.22.03  M. Daniels                               *          
+     A*           ---------------------------------------------------*          
+     A*           Printing of company and currency specific info     *          
+     A*           controlled by indicators as follows:               *          
+     A*                                                              *          
+     A*              56 = Canada                                     *          
+     A*              57 = Canadian Dollars                           *          
+     A*              58 = USA                                        *          
+     A*              59 = US Dollars                                 *          
+     A*              76 = Mexico                                     *          
+     A*              77 = Mexican Peso                               *          
+     A*                                                              *          
+     A* S10007312 04.27.04  M. Daniels                               *          
+     A*           ---------------------------------------------------*          
+     A*           The handling of indicators will be based on the    *          
+     A*           DW Version being processed...                      *          
+     A*                                                              *          
+     A*              56 = Canada              UCAN*                  *          
+     A*              57 = Canadian Dollars    UCANCAD*               *          
+     A*              58 = USA             not UCAN* or UMEX*         *          
+     A*              59 = US Dollars      not UCANCAD* or UMEXMXP*   *          
+     A*              76 = Mexico              UMEX*                  *          
+     A*              77 = Mexican Peso        UMEXMXP*               *          
+     A*                                                              *          
+      * CC27295 07.15.2009 Charlie McLean                                       
+      *         Added STRPAGGRP and overlay for PDF processing                  
+      *         Cleaned up page use and print of tracking numbers               
+      *                                                                         
+      * CC27587 10.15.2009 Charlie McLean                                       
+      *         Added invoice doc type to mail tag                              
+      *                                                                         
+     A****************************************************************          
+27295A          R STRPAG                    STRPAGGRP(&INVVOC)                  
+27295A*           INVVOC        17A  P                                          
+27587A            INVVOC        19A  P                                          
+     A          R HEADING1                                                      
+     A                                      SPACEA(1)                           
+      *                                                                         
+      * MISCELLANEOUS INFORMATION                                               
+      *                                                                         
+++   A            RRTTL@        40A       54SKIPB(1)                            
+     A  76        RREFH         19A       84HIGHLIGHT                           
+     A                                      SPACEB(3)                           
+     A  76        RREF           8S 0    106TEXT('Invoice#')                    
+     A  76        RREFT          2A      115TEXT('Invoice Type')                
+      *                                                                         
+     A  76        RBLNK          1A        5SPACEB(2)                           
+27295A*N76        RADR1         31A        5SPACEB(5)                           
+27295A*N76        RADR1         31A        5SPACEB(7)                           
+28221A N76        RADR1         45A        5SPACEB(7)                           
+     A            RINVH          8A       97HIGHLIGHT                           
+     A N76        SDDOC          8S 0    106TEXT('Invoice#')                    
+     A N76        SDDCT          2A      115TEXT('Invoice Type')                
+      *                                                                         
+28221A*           RADR2         37A        5SPACEB(1)                           
+28221A            RADR2         45A        5SPACEB(1)                           
+      *                                                                         
+     A            RADR3         27A        5SPACEB(1)                           
+      *                                                                         
+     A            RDTEH          5A      100HIGHLIGHT                           
+     A            RRDI           8A      106TEXT('Date - Invoice              ')
+      *                                                                         
+     A            RADR4         30A        5SPACEB(1)                           
+      *                                                                         
+27951A*           RADR5         20A        5SPACEB(1)                           
+27951A            RADR5         30A        5SPACEB(1)                           
+     A            RORDH          6A       99HIGHLIGHT                           
+     A            RRDOCO         8A      106TEXT('Ticket   (Order #, Invoice, ')
+      *                                                                         
+     A            RADR6         30A        5SPACEB(1)                           
+      *                                                                         
+     A            RPAGH          5A      100HIGHLIGHT                           
+     A                                      SPACEB(1)                           
+     A            PAG1           1S 0    106TEXT('Date - Invoice              ')
+     A                                      EDTCDE(Z)                           
+      *                                                                         
+      * BILL AND SHIP TO ADDRESS'S                                              
+      *                                                                         
+     A            RBILH          8A       17HIGHLIGHT                           
+     A                                      SPACEB(1)                           
+     A            RSHPH          8A       72HIGHLIGHT                           
+     A            SHAN8          8S 0     17TEXT('Address Number (Bill to#)   ')
+     A                                      SPACEB(1)                           
+     A            SHSHAN         8S 0     72TEXT('Address Number (Ship to#)   ')
+      *                                                                         
+     A            RRSLD1        40A       17TEXT('Address -Sold To Address Lin')
+     A                                      SPACEB(1)                           
+     A N41        RRSHL1        40A       72TEXT('Address - Ship To Address Li')
+      *                                                                         
+     A            RRSLD2        40A       17TEXT('Address -Sold To Address Lin')
+     A                                      SPACEB(1)                           
+     A N41        RRSHL2        40A       72TEXT('Address - Ship To Address Li')
+      *                                                                         
+     A            RRSLD3        40A       17TEXT('Address -Sold To Address Lin')
+     A                                      SPACEB(1)                           
+     A N41        RRSHL3        40A       72TEXT('Address - Ship To Address Li')
+      *                                                                         
+     A            RRSLD4        40A       17TEXT('Address -Sold To Address Lin')
+     A                                      SPACEB(1)                           
+     A N41        RRSHL4        40A       72TEXT('Address - Ship To Address Li')
+      *                                                                         
+     A            RRSLD5        40A       17TEXT('Address -Sold To Address Lin')
+     A                                      SPACEB(1)                           
+     A N41        RRSHL5        40A       72TEXT('Address - Ship To Address Li')
+     A*           RRSLD6        40A       17TEXT('Address -Sold To Address Lin')
+     A*                                     SPACEB(1)                           
+     A*N41        RRSHL6        40A       72TEXT('Address - Ship To Address Li')
+     A*           RR#A17        40A       17TEXT('Address Line 7 - Ship To    ')
+     A*                                     SPACEB(1)                           
+     A*N41        RR#S27        40A       72TEXT('Address Line 7 - Sold To    ')
+     A*           RR#A11        40A       17TEXT('Address Line 8 - Ship To    ')
+     A*                                     SPACEB(1)                           
+     A*N41        RR#A12        40A       72TEXT('Address Line 8 - Sold To    ')
+     A*           RR#A37        40A       17TEXT('Address Line 9 - Ship To    ')
+     A*                                     SPACEB(3)                           
+      *                                                                         
+     A            RPOH           3A        5HIGHLIGHT                           
+     A                                      SPACEB(2)                           
+     A            RRVR01        25A       09TEXT('Reference (PO #)            ')
+     A            RCARH          9A       40HIGHLIGHT                           
+     A            RRCARD        25A       50TEXT('Shipped via Description     ')
+     A            RTRMH          6A       80HIGHLIGHT                           
+     A            RRPTD         30A       87TEXT('Payment Terms Desc          ')
+     A                                      SPACEA(2)                           
+     A*N76                                  SPACEA(2)                           
+     A* 76                                  SPACEA(3)                           
+      *                                                                         
+      * DETAIL HEADINGS                                                         
+      *                                                                         
+     A            RQTYH          3A       13HIGHLIGHT                           
+     A            RUMH           3A       22HIGHLIGHT                           
+     A            RPRDH         11A       28HIGHLIGHT                           
+     A            RDSCH         11A       47HIGHLIGHT                           
+     A            RECHH          4A       88HIGHLIGHT                           
+     A            REXTH          8A      103HIGHLIGHT                           
+     A            RTAXH          1A      118HIGHLIGHT                           
+      *                                                                         
+     A          R TOTAL5                                                        
+25920 *                                                                         
+  |   * LOCATION ORDER SHIPPED FROM                                             
+  |   *                                                                         
+  |  A            RWHSH         12A       12HIGHLIGHT                           
+  |  A*                                     SPACEB(1)                           
+  |  A*                                     SKIPB(52)                           
+  |  A            RRMCU          3A       26TEXT('Cost Center                 ')
+25920A            RRLOCN        30A       30TEXT('Cost Center                 ')
+     A                                   103'--------------'                    
+      *                                                                         
+      * SALES TAX AND RATE                                                      
+      *                                                                         
+???  A  56        CAN2          17A       47HIGHLIGHT                           
+     A                                      SPACEB(1)                           
+     A  34        RSTX           9A       79HIGHLIGHT                           
+     A  58                                  SPACEB(1)                           
+S7312A N76        RRTRAT         7A       89TEXT('Total Area Tax Rate         ')
+S7312A N76                                  HIGHLIGHT                           
+S7312A N76        RR#ATT        15A      101TEXT('Amount - Total Sales Tax    ')
+      *                                                                         
+      * INVOICE AMOUNT AND PAY DATE                                             
+      *                                                                         
+25920A            RPAYB         24A       59HIGHLIGHT                           
+     A                                      SPACEB(2)                           
+     A            RR#DD          8A       85TEXT('Due Date                    ')
+     A                                      HIGHLIGHT                           
+     A N76        RR#ATO        15A      101TEXT('Amount - Total Sales Order  ')
+     A N76                                  HIGHLIGHT                           
+S6042A            RCUR$         42A       59SPACEB(2)                           
+25920 *                                                                         
+  |   * LOCATION ORDER SHIPPED FROM                                             
+  |   *                                                                         
+  |  A*           RWHSH         12A       12HIGHLIGHT                           
+  |  A*                                     SKIPB(52)                           
+  |  A*           RRMCU          3A       26TEXT('Cost Center                 ')
+25920A*           RRLOCN        30A       30TEXT('Cost Center                 ')
+      *                                                                         
+      * REMIT AND WIRE TO ADDRESSES                                             
+      *                                                                         
+14247A            RWR0          40A       44HIGHLIGHT                           
+25920A                                      SKIPB(53)                           
+     A            RRM1           9A        5HIGHLIGHT                           
+S8307A                                      SPACEB(1)                           
+14247A            RWR1          40A       44HIGHLIGHT                           
+14247A            RCH1          40A       84HIGHLIGHT                           
+      *                                                                         
+     A            RRM2          35A        5SPACEB(1)                           
+14247A            RWR2          40A       44                                    
+14247A            RCH2          40A       84                                    
+      *                                                                         
+     A            RRM3          24A        5SPACEB(1)                           
+14247A            RWR3          40A       44                                    
+14247A N76        RCH3          40A       84                                    
+     A  76        RRSBT         15A      101                                    
+      *                                                                         
+     A            RRM4          18A        5SPACEB(1)                           
+14247A            RWR4          40A       44                                    
+14247A            RCH4          40A       84                                    
+      *                                                                         
+     A            RRM5          16A        5SPACEB(1)                           
+14247A            RWR5          40A       44                                    
+14247A N76        RCH5          40A       84                                    
+     A  76        RRMATT        15A      101                                    
+      *                                                                         
+     A            RRM6          15A        5SPACEB(1)                           
+14247A            RWR6          40A       44                                    
+14247A            RCH6          40A       84                                    
+      *                                                                         
+14247A            RWR7          40A       44SPACEB(1)                           
+     A  76        RRMATO        15A      101                                    
+      *                                                                         
+14247A  75        REPRT          7A       84HIGHLIGHT                           
+14247A            RTAX          14A      101HIGHLIGHT                           
+      *                                                                         
+25920A            RRWRDS        84A       32TEXT('Amount in Words')             
+S7312A                                      SPACEB(2)                           
+      *                                                                         
+      * DISCLOSURE STATMENT                                                     
+      *                                                                         
+     A          R TOTAL6                                                        
+27295A* 27954     RDSC1        114A        5SKIPB(63)                           
+27295A* 27954     RDSC2        114A        5SPACEB(1)                           
+     A* 27954                               SPACEA(2)                           
+27954A            RDSC1        114A        5SKIPB(62)                           
+27954A            RDSC2        114A        5SPACEB(1)                           
+27954A            RDSC3        114A        5SPACEB(1)                           
+     A                                      SPACEA(2)                           
+      *                                                                         
+27295A          R TOTAL7                    ENDPAGGRP                           
+      *                                                                         
+      * DETAIL                                                                  
+      *                                                                         
+     A          R DETAIL1                                                       
+     A            R2SOQS        10A        9TEXT('Units - Quantity Shipped/Com')
+     A            RRUM           2A       23TEXT('Unit of Measure             ')
+     A            HRUITM        15A       28TEXT('Item Number - Unknown Format')
+     A            RRRDSC        30A       47TEXT('Description                 ')
+     A            RRUPRC        15A       82TEXT('Amount - Price per Unit     ')
+     A            R2AEXP        15A      101TEXT('Amount - Extended Price     ')
+     A            RRTX           1A      118TEXT('Taxable (Y/N)               ')
+     A                                      SPACEA(1)                           
+      * tracking numbers                                                        
+27295A          R DETAIL11                                                      
+27295A  68                                 9'Tracking Numbers'                  
+27295A                                      HIGHLIGHT                           
+27295A            RRTRC1        30A       27TEXT('Tracking number             ')
+27295A            RRCAR1         3A       58TEXT('Carrier                     ')
+27295A                                      SPACEA(1)                           
+      *                                                                         
+     A          R DTL1                                                          
+     A            PPG           16A       58                                    
+     A            ISMCST         9S 4     75EDTCDE(M)                           
+     A                                      SPACEA(1)                           
+      *                                                                         
+     A          R DTL2                                                          
+     A            GALPND        11S 4     50EDTCDE(M)                           
+     A            LBS            6A       64SPACEA(1)                           
+      *                                                                         
+     A          R DETAIL9                                                       
+     A*                                     TEXT('Orig Order Text')             
+     A*           VTX095        16A       30TEXT('ORIGINAL ORDER #            ')
+     A*                                     SPACEB(1)                           
+     A*           RROORN         8A       47TEXT('Original Order Number       ')
+     A*           VTX096         5A       58TEXT('TYPE                        ')
+     A          R DETAIL3B                                                      
+     A                                      TEXT('Blank Line')                  
+     A                                     9' '                                 
+     A                                      SPACEB(1)                           
+      *                                                                         
+     A          R DETAIL3                                                       
+     A                                      TEXT('Text Line')                   
+     A            RRTXLN        80A       17TEXT('Message Text Line           ')
+     A                                      SPACEA(1)                           
+      *                                                                         
+     A          R NOPRINT                                                       
+     A            VTX001        12A       93TEXT('Page Number-                ')
+     A            RR#PG          4A      106TEXT('Page Number                 ')
+     A            RRUITM        25A       14TEXT('Item Number - Unknown Format')
+     A                                      SKIPB(1)                            
+     A            VC0CO         40A       47TEXT('Organization Name           ')
+     A            RRDL01        24A       59TEXT('Bank Account Description    ')
+     A            VC0005         6A       68TEXT('Description                 ')
+     A            VTX002        12A      100TEXT('Date       -                ')
+     A                                      SPACEB(1)                           
+     A            RRTXT2        40A       47TEXT('Processing Option Text      ')
+     A                                      SPACEB(1)                           
+     A            VTX003        12A      100TEXT('Customer   -                ')
+     A            RRTXT3        40A       47TEXT('Processing Option Text      ')
+     A                                      SPACEB(1)                           
+     A            VTX006        13A      100TEXT('Brn/Plt    -                ')
+     A            RRMCU          3A      113TEXT('Cost Center                 ')
+     A N03        VTX005        13A      100TEXT('Related PO -                ')
+     A                                      SPACEB(1)                           
+     A N03        RRRORN         8A      117TEXT('Related PO/SO Number        ')
+     A N03N41     VTX045        12A      100TEXT('Order Nbr  -                ')
+     A                                      SPACEB(1)                           
+     A N03N41     RRDOC#         8A      114TEXT('Document (Order #, Invoice, ')
+     A N03N41     RRDCT#         2A      123TEXT('Order Type                  ')
+     A            VTX004        12A      100TEXT('Invoice    -                ')
+     A                                      SPACEB(1)                           
+     A            RR#DOC         8A      114TEXT('Document (Order #, Invoice, e-
+     A                                      tc.)                 ')             
+     A            RRDCT          2A      123TEXT('Document Type               ')
+     A            VTX007         8A       10TEXT('Sold To:                    ')
+     A                                      SPACEB(2)                           
+     A N41        VTX008         8A       70TEXT('Ship To:                    ')
+     A            VC0007        10A      118TEXT('From Currency Code          ')
+     A            VTX019         7A       10TEXT('Tax ID:                     ')
+     A                                      SPACEB(1)                           
+     A            VC0003        22A       20TEXT('Description                 ')
+     A  35        VTX030         7A       70TEXT('Tax ID:                     ')
+     A  35        VC0004        22A       80TEXT('Description                 ')
+     A            VTX036         9A       10TEXT('Tax Cert:                   ')
+     A                                      SPACEB(1)                           
+     A            RRTXCT        20A       20TEXT('Certificate, Tax Exemption  ')
+     A            VTX009        40A        2TEXT('------------------------------
+     A                                      -----------          ')             
+     A                                      SPACEB(1)                           
+     A            VTX010        40A       42TEXT('------------------------------
+     A                                      -----------          ')             
+     A            VTX011        40A       82TEXT('------------------------------
+     A                                      -----------          ')             
+     A            VTX017        13A        4TEXT('Request Date                ')
+     A                                      SPACEB(1)                           
+     A N03        VTX020        13A       26TEXT('Customer P.O.               ')
+     A            VTX021         6A       59TEXT('F.O.B.                      ')
+     A            VTX023         6A       79TEXT('Ship :                      ')
+     A            RRDEL1        30A       87TEXT('Delivery Instructions Line 1')
+     A            RRTRDJ         8A        6TEXT('Date - Order/Transaction    ')
+     A                                      SPACEB(1)                           
+     A            RRFRTH        30A       47TEXT('Freight Handling Code       ')
+     A            VTX024         6A       79TEXT('Inst :                      ')
+     A            RRDEL2        30A       87TEXT('Delivery Instructions Line 2')
+     A            VTX013        40A        2TEXT('------------------------------
+     A                                      -----------          ')             
+     A                                      SPACEB(1)                           
+     A            VTX014        40A       42TEXT('------------------------------
+     A                                      -----------          ')             
+     A            VTX015        40A       82TEXT('------------------------------
+     A                                      -----------          ')             
+     A            VTX027         8A        2TEXT('Ln/Rq Dt                    ')
+     A                                      SPACEB(1)                           
+     A            VTX026        21A       11TEXT('    Description             ')
+     A            VTX025        25A       42TEXT('       Item Number          ')
+     A            VTX028         2A       68TEXT('UM                          ')
+     A            VTX029        15A       71TEXT('Ship/Back/Cancel            ')
+     A            VTX032        15A       87TEXT('     Price                  ')
+     A            VTX033        15A      103TEXT('Extended Price              ')
+     A            VTX049         3       119TEXT('Taxable                     ')
+     A N41        VTX053        15A      146TEXT('Extended Cost               ')
+     A N41        VTX075         3       163TEXT('Pct                         ')
+     A            VTX056         8A        2TEXT('--------                    ')
+     A                                      SPACEB(1)                           
+     A            VTX054        30A       11TEXT('------------------------------
+     A                                      -                    ')             
+     A  03 40     RRSHL1        40A       12TEXT('Address - Ship To Address Li')
+     A            VTX055        25A       42TEXT('--------------------------  ')
+     A            VTX057         2A       68TEXT('--                          ')
+     A            VTX058        15A       71TEXT('---------------             ')
+     A            VTX059        15A       87TEXT('---------------             ')
+     A            VTX060        15A      103TEXT('---------------             ')
+     A            VTX073         3       119TEXT('-------                     ')
+     A N41        VTX061        15A      145TEXT('---------------             ')
+     A N41        VTX076         6       161TEXT('------                      ')
+     A  60        RRLNID         7A        2TEXT('Line Number                 ')
+     A                                      SPACEB(1)                           
+     A            VTX084         1        10TEXT('*                           ')
+     A                                      SPACEB(1)                           
+     A N62N41     RRECST        15A      145TEXT('Amount - Extended Cost      ')
+     A N62N41     RRPCT          6A      161TEXT('Percent                     ')
+     A  60        RRDRQJ         8A        2TEXT('Date - Requested (Julian)   ')
+     A                                      SPACEB(1)                           
+     A            RRDSC2        30A       11TEXT('Description - Line 2        ')
+     A                                      SPACEB(1)                           
+     A  03        VTX078         7A       42TEXT('Order #                     ')
+     A  03        RRDCTO         2A       59TEXT('Order Type                  ')
+     A N62        RRSOBK        15A       71TEXT('Units - Qty Backordered/Held')
+     A N89N62     VTX046         3A       93TEXT('Per                         ')
+     A N62        RRUOM4         2A       99TEXT('Unit of Measure - Pricing   ')
+     A N63        VC0001        30A       11TEXT('Description                 ')
+     A                                      SPACEB(1)                           
+     A  46        VTX088        18A       11TEXT('From/Thru Potency. . . . . . -
+     A                                      . . . . . .          ')             
+     A                                      SPACEB(1)                           
+     A  47        VTX089        10A       11TEXT('Lot Grade. . . . . . . . . . -
+     A                                      . . . . . .          ')             
+     A                                      SPACEB(1)                           
+     A  48        VTX090        12A       11TEXT('Lot Potency. . . . . . . . . -
+     A                                      . . . . . .          ')             
+     A                                      SPACEB(1)                           
+     A  47        RRLOTG         3A       22TEXT('Lot Grade                   ')
+     A  48        RRLOTP         7A       24TEXT('Lot Potency                 ')
+     A  46        RRFRMP         8A       30TEXT('From Potency                ')
+     A  46                                39'-'                                 
+     A  46        RRTHRP         8A       41TEXT('Thru Potency                ')
+     A  45        VTX047        16A       11TEXT('From/Thru Grade. . . . . . . -
+     A                                      . . . . . .          ')             
+     A                                      SPACEB(1)                           
+     A  45        RRFRGD         3A       28TEXT('From Grade                  ')
+     A  45                                32'-'                                 
+     A  45        RRTHGD         3A       34TEXT('Thru Grade                  ')
+     A N63 50     RRCITM        25A       42TEXT('Item Number - Customer/Vendo')
+     A N62N63     RRSOCN        15A       71TEXT('Units - Quantity Canceled/Sc')
+     A            RRTXLN        80A        2TEXT('Message Text Line           ')
+     A                                      SPACEB(1)                           
+     A            VC0002        24A       42TEXT('Description - Line 1        ')
+     A                                      SPACEB(1)                           
+     A            VC0010        30A       46TEXT('Description                 ')
+     A                                      SPACEB(1)                           
+     A            RRLPRC        15A       87TEXT('Amount - Price Per Unit     ')
+     A            VC0011        14A       46TEXT('Description                 ')
+     A                                      SPACEB(1)                           
+     A            R5UM           2A       68TEXT('Unit of Measure             ')
+     A            R5SOQS        15A       71TEXT('Units - Quantity Shipped/Com')
+     A            R5UPRC        15A       87TEXT('Amount - Price per Unit     ')
+     A            R5AEXP        15A      103TEXT('Amount - Extended Price     ')
+     A            R5TX           1A      120TEXT('Taxable (Y/N)               ')
+     A N41        R5ECST        15A      145TEXT('Amount - Extended Cost      ')
+     A N41        R5PCT          6A      161TEXT('Percent                     ')
+     A            R5SOBK        15A       71TEXT('Units - Qty Backordered/Held')
+     A                                      SPACEB(1)                           
+     A            R5UOM4         2A       99TEXT('Unit of Measure - Pricing   ')
+     A            R5SOCN        15A       71TEXT('Units - Quantity Canceled/Sc')
+     A                                      SPACEB(1)                           
+     A N31        VTX067        15A      102TEXT('-----------------           ')
+     A N31        VTX066         6A       88TEXT('Total:                      ')
+     A                                      SPACEB(1)                           
+     A N31        RRSTOT        17A      101TEXT('Amount - Extended Price     ')
+     A                                      SPACEA(2)                           
+     A N31        VTX031        26        27TEXT('. . . . . . . . . . . . . . .-
+     A                                       . . .               ')             
+     A                                      SPACEB(2)                           
+     A  31        VTX037        21        27TEXT('. . . . . . . . . . . . . . .-
+     A                                       .                   ')             
+     A                                      SPACEB(1)                           
+     A  31        VTX071        27        49TEXT('Tax Group Summary Continued ')
+     A N31        VTX034        17        54TEXT('Tax OOOOOOOuOOOrO. . . . . . -
+     A                                      . . . . . .          ')             
+     A            RRTXR1         7A       58                                    
+     A            RRFVTY         3A       66                                    
+     A            RRATXA        15A       70                                    
+     A N31        VTX035        29        72TEXT('. . .. . . . .OOOOOOOOOOOOOOO-
+     A                                                           ')             
+     A  31        VTX072        25        77TEXT('. . . . . . . . . . . . . . .-
+     A                                       .                   ')             
+     A            RRSTAM        15A       86                                    
+     A            R4DSC2        25A       32                                    
+     A                                      SPACEB(1)                           
+     A            R4TXR1         7A       58                                    
+     A            R4ATXA        15A       70TEXT('Amount - Taxable            ')
+     A            R4STAM        15A       86                                    
+     A            VTX038         9A       91TEXT('Sales Tax                   ')
+     A                                      SPACEB(1)                           
+     A            VTX039        11A      106TEXT('Total Order                 ')
+     A            VTX040        40A        2TEXT('------------------------------
+     A                                      -----------          ')             
+     A                                      SPACEB(1)                           
+     A            VTX041        40A       42TEXT('------------------------------
+     A                                      -----------          ')             
+     A            VTX042        40A       82TEXT('------------------------------
+     A                                      -----------          ')             
+     A            VTX048         6A        1TEXT('Terms                       ')
+     A                                      SPACEB(1)                           
+     A            VTX044        12A       36TEXT('Net Due Date                ')
+     A  37        VTX083         1        58TEXT('-                           ')
+     A  37        $$#DD          8A       60TEXT('Date - Due                  ')
+     A  30        VTX079        18A       83TEXT('Discount Available . . . . . -
+     A                                      . . . . . .          ')             
+     A                                      SPACEB(1)                           
+     A            RRADSC        15A      103TEXT('Amount - Discount Available ')
+     A            R3ADD1        40A       34TEXT('Address Line 1              ')
+     A                                      SPACEB(5)                           
+     A            R3ADD2        40A       34TEXT('Address Line 2              ')
+     A                                      SPACEB(1)                           
+     A            R3ADD3        40A       34TEXT('Address Line 3              ')
+     A                                      SPACEB(1)                           
+     A            R3ADD4        40A       34TEXT('Address Line 4              ')
+     A                                      SPACEB(1)                           
+     A            VC0008         3A       78TEXT('Pay Instrument Desc         ')
+     A            R3ADD5        40A       34TEXT('Address Line 5              ')
+     A                                      SPACEB(1)                           
+     A            VC0009        17A        5TEXT('Draft Issuing City          ')
+     A                                      SPACEB(1)                           
+     A            R3ADD6        40A       34TEXT('Address Line 6              ')
+     A            R3#ADD        40A       34TEXT('Address Line 5              ')
+     A                                      SPACEB(1)                           
+     A            RRAAP         15A        3TEXT('Amount - Due                ')
+     A                                      SPACEB(1)                           
+     A            RRDSY          8A       19TEXT('Date - Batch System Date    ')
+     A            RRDD           8A       30TEXT('Date - Due                  ')
+     A            R1AAP         15A       68TEXT('Amount Open                 ')
+     A            RRTNST         5A        4TEXT('Transit Number - Bank       ')
+     A                                      SPACEB(1)                           
+     A            R1TNST         5A       10TEXT('Transit Number - Bank       ')
+     A            RRCBNK        12A       15TEXT('Bank Account Number - Custome-
+     A                                      r                    ')             
+     A            RRCHKD         2A       28TEXT('Bank Account - Control Digit')
+     A            R1ADD1        40A       32TEXT('Address Line 1              ')
+     A            R1ADD2        40A       32TEXT('Address Line 2              ')
+     A                                      SPACEB(1)                           
+     A            RRCRCD         3A        9TEXT('Currency Code - From        ')
+     A                                      SPACEB(1)                           
+     A            R1ADD3        40A       32TEXT('Address Line 3              ')
+     A                                      SPACEB(1)                           
+     A            R1ADD4        40A       32TEXT('Address Line 4              ')
+     A                                      SPACEB(1)                           
+     A            R1ADD5        40A       32TEXT('Address Line 5              ')
+     A                                      SPACEB(1)                           
+     A            R1ADD6        40A       32TEXT('Address Line 6              ')
+     A                                      SPACEB(1)                           
+     A            R1#ADD        40A       32TEXT('Address Line 7              ')
+     A                                      SPACEB(1)                           
+     A            R1ADD8        40A       32TEXT('Address Line 8              ')
+     A                                      SPACEB(1)                           
+     A            RTXYN          1A       83TEXT('Taxable (Y/N)               ')
+      *                                                                         
+     A          R DETAIL2                                                       
+     A*         R DETAIL7                                                       
+     A          R DRAFT1                                                        
+     A          R DETAIL4                                                       
+     A                                      TEXT('Price Adjustment')            
+     A          R DETAIL5                                                       
+     A                                      TEXT('Quantity and Price for Adj  ')
+     A          R TOTAL1                                                        
+     A                                      TEXT('Ext Price Total')             
+     A          R TOTAL2                                                        
+     A                                      TEXT('Tax Hdg')                     
+     A          R TOTAL3                                                        
+     A                                      TEXT('Tax Detail')                  
+     A          R TOTAL4                                                        
+     A                                      TEXT('Tax Authority Detail')        
+     A*         R TRMPG1                    SKIPB(1)                            
+     A*                                    1' '                                 
+     A*                                     SKIPA(55)                           
+     A*         R TRMPG3                    SKIPB(1)                            
+     A*                                    1' '                                 
+     A*         R TRMPG2                                                        
+     A* 58                                  OVERLAY(JDEDTAAP/TRMOVL 0.0 0.0)    
+     A* 56                                  OVERLAY(JDEDTAAP/TRMCOV 0.0 0.0)    
+S7747A**76                                  OVERLAY(JDEDTAAP/TRMMOV 0.0 0.0)    

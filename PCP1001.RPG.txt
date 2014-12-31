@@ -1,0 +1,114 @@
+     H                                                                          
+      *--------------------------------------------------------------           
+      *                                                                         
+      * Create PDF - Write Log of Invoice PDF Created                           
+      *   Check Customer Master for email flag (A5SI03)                         
+      *   A5SI03 = blank or 0, no email                                         
+      *          = 1 email and print                                            
+      *          = 2 email only                                                 
+      *                                                                         
+      * CC27512 09.19.2009 Charlie McLean                                       
+      *         Project started                                                 
+      *                                                                         
+      * CC27587 10.15.2009 Charlie McLean                                       
+      *         Added no-email based on invoice doc type (parm)                 
+      *         and look up to UDC 42 NM for list of no mail types              
+      *                                                                         
+      * CC27617 10.28.2009 Charlie McLean                                       
+      *         Set on print flag for all no-mail invoice types                 
+      *                                                                         
+      *--------------------------------------------------------------           
+      *                                                                         
+27587 *           DR user defined codes                                         
+27587FF0005   IF  E           K        DISK                                     
+      *       customer master                                                   
+     FF0301LA IF  E           K        DISK                                     
+      *       order header                                                      
+     FF4201LA IF  E           K        DISK                                     
+      *       PDF names                                                         
+     FFCP1001 O   E           K        DISK                      A              
+      *                                                                         
+     C           *ENTRY    PLIST                           Parm list            
+     C                     PARM           PLWNAM128        PDF name             
+     C                     PARM           PLPTNM256        PDF path/nam         
+     C                     PARM           PLPRTF  1        print flag           
+     C                     PARM           PLJOB  10        job name             
+     C                     PARM           PLUID  10        user id              
+     C                     PARM           PLDCT   2        doc type             
+      * split out order number and invoice number                               
+     C                     Z-ADD*ZERO     ##AN8   80       customer             
+     C                     Z-ADD*ZERO     ##DOCO  80       order                
+     C                     Z-ADD*ZERO     ##DOC   80       invoice              
+     C                     MOVE *BLANKS   $$WNAM 17        order/invoic         
+     C                     MOVELPLWNAM    $$WNAM                                
+     C                     MOVEL$$WNAM    ##DOCO           order                
+     C                     MOVE $$WNAM    ##DOC            invoice              
+      * get bill to customer                                                    
+     C           ##DOCO    CHAINF4201LA              35                         
+     C           *IN35     IFEQ *OFF                                            
+     C                     Z-ADDSHAN8     P1AN8            bill to              
+     C                     Z-ADD##DOCO    P1DOCO           order                
+     C                     Z-ADD##DOC     P1DOC            Invoice              
+     C                     MOVELPLPTNM    P1PTNM           path/name            
+27587C                     MOVELPLDCT     P1DCT                                 
+      * get PDF print flag from customer master                                 
+     C                     MOVE '1'       PLPRTF           print                
+     C           SHAN8     CHAINF0301LA              35                         
+     C           *IN35     IFEQ *OFF                                            
+     C           A5SI03    IFEQ '1'                        mail & print         
+     C                     MOVE '1'       P1PRTF           mail                 
+     C                     MOVE '1'       PLPRTF           print                
+     C                     ENDIF                                                
+     C           A5SI03    IFEQ '2'                        mail only            
+     C                     MOVE '1'       P1PRTF           mail                 
+     C                     MOVE '0'       PLPRTF           print                
+     C                     ENDIF                                                
+     C                     ELSE                                                 
+     C                     MOVE '1'       PLPRTF           print                
+     C                     ENDIF                                                
+27587 * if invoice doc type is in UDC 42 NM then                                
+27587 *   turn off email switch P1PRTF                                          
+27587C           DRKEY     KLIST                                                
+27587C                     KFLD           DRK1    4                             
+27587C                     KFLD           DRK2    2                             
+27587C                     KFLD           DRK3   10                             
+27587C                     MOVE *BLANKS   DRK1                                  
+27587C                     MOVE *BLANKS   DRK2                                  
+27587C                     MOVE *BLANKS   DRK3                                  
+27587C                     MOVEL'42'      DRK1                                  
+27587C                     MOVEL'NM'      DRK2                                  
+27587C                     MOVE PLDCT     DRK3                                  
+27587C           DRKEY     CHAINF0005                34                         
+27587C           *IN34     IFNE *ON                                             
+27587C                     MOVE *BLANKS   P1PRTF                                
+27617C                     MOVE '1'       PLPRTF           print                
+27587C                     ENDIF                                                
+      * set values for update fields                                            
+     C                     MOVE PLUID     P1USER                                
+     C                     MOVEL'PCP1001' P1PID                                 
+     C                     MOVE PLJOB     P1JOBN                                
+      * convert current date to julian                                          
+     C                     TIME           $WK120 120                            
+     C                     MOVE $WK120    CURDTE  60                            
+     C                     MOVE CURDTE    #SIDTE  6                             
+     C                     MOVE *BLANK    #EDAT   8                             
+     C                     MOVEL'*MDY    '#FFMT   7                             
+     C                     MOVEL'*JUL    '#TFMT   7                             
+     C                     MOVEL'*NONE   '#SEP    7                             
+     C                     MOVE ' '       $ERTST  1                             
+     C                     CALL 'X0028   '             34                       
+      *                    ---- ----------                                      
+     C                     PARM           #SIDTE                                
+     C                     PARM           #EDAT                                 
+     C                     PARM           #FFMT                                 
+     C                     PARM           #TFMT                                 
+     C                     PARM           #SEP                                  
+     C                     PARM           $ERTST                                
+     C                     MOVE #SIDTE    P1UPMJ                                
+     C                     TIME           P1TDAY                                
+      * write PDF invoice log record                                            
+     C                     WRITEICP1001                                         
+     C                     CLOSEFCP1001                                         
+     C                     ENDIF                                                
+      **                                                                        
+     C                     MOVE *ON       *INLR            Set LR               

@@ -1,0 +1,23 @@
+/*-------------------------------------------------------------------*/         
+/*                                                                   */         
+/* Create PDF - Mail Customer Invoices                               */         
+/*   Rename PDF:    No                                               */         
+/*   Move PDF:      No                                               */         
+/*   Chg Authority: No                                               */         
+/*   Manage Spool:  No                                               */         
+/*   Email:         Yes. Single Address In Data Area                 */         
+/*                  Use log file FCP1001                             */         
+/*                                                                   */         
+/* CC27455 09.22.2009 Charlie McLean                                 */         
+/*         Project started                                           */         
+/*                                                                   */         
+/*-------------------------------------------------------------------*/         
+                                                                                
+ START:      PGM                                                                
+             CHGJOB     LOG(4 99 *SECLVL) LOGCLPGM(*YES)                        
+             CALL       PGM(PCP1003)                                            
+             OVRPRTF    FILE(QPQUPRFIL) OUTQ(QGPL/VDEVORE) /* cem +             
+                          2014.08.04 */                                         
+             RUNQRY     QRY(SERUSRQRY/CP1003)                                   
+                                                                                
+END:         ENDPGM                                                             

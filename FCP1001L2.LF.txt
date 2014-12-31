@@ -1,0 +1,17 @@
+      *----------------------------------------------------------------         
+      *                                                                         
+      *  PDF Invoice Log - Single Email Batch                                   
+      *                                                                         
+      *  T23354  11.11.2013 Charlie McLean                                      
+      *          new                                                            
+      *                                                                         
+      *----------------------------------------------------------------         
+      *                                                                         
+     A          R ICP1001                   PFILE(FCP1001)                      
+      *                                                                         
+     A          K P1AN8                                                         
+     A          K P1DOCO                                                        
+     A          K P1DOC                                                         
+      *                                                                         
+     A          S P1PRTF                    COMP(EQ 'B')                        
+      **                                                                        

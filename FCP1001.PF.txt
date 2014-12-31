@@ -1,0 +1,94 @@
+      *----------------------------------------------------------------         
+      *                                                                         
+      *  PDDF Invoice Log                                                       
+      *                                                                         
+      *  CC27455 09.01.2009 Charlie McLean                                      
+      *          Project started                                                
+      *                                                                         
+      *  CC27587 10.15.2009 Charlie McLean                                      
+      *          Added invoice doc type P1DCT                                   
+      *                                                                         
+      *  T23354  11.11.2013 Charlie McLean                                      
+      *          Removed indexing in favor of two logicals                      
+      *                                                                         
+      *----------------------------------------------------------------         
+     A          R ICP1001                   TEXT('PDF Invoices Created')        
+      *                                                                         
+     A            P1AN8          8S 0       TEXT('Bill To Customer . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('                    ' +     
+     A                                      'Bill To             ' +            
+     A                                      '--------')                         
+      *                                                                         
+     A            P1DOCO         8S 0       TEXT('Order. . . . . . . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('                    ' +     
+     A                                      'Order               ' +            
+     A                                      '--------')                         
+      *                                                                         
+     A            P1DOC          8S 0       TEXT('Invoice. . . . . . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('                    ' +     
+     A                                      'Invoice             ' +            
+     A                                      '--------')                         
+      *                                                                         
+     A            P1DCT          2A         TEXT('Invoice Doc Type . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('Doc                 ' +     
+     A                                      'Typ                 ' +            
+     A                                      '---')                              
+      *                                                                         
+     A            P1PRTF         1A         TEXT('Email Flag . . . . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('                    ' +     
+     A                                      '                    ' +            
+     A                                      '-')                                
+      *                                                                         
+     A            P1PTNM       256A         TEXT('PDF Name and Path. . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('PDF Path            ' +     
+     A                                      'and Name            ' +            
+     A                                      '--------------------')             
+      *                                                                         
+     A            P1RTN          2A         TEXT('Return Code. . . . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('Rtn                 ' +     
+     A                                      'Cde                 ' +            
+     A                                      '---')                              
+      *                                                                         
+     A            P1RTXT        40A         TEXT('Return Text. . . . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('Return              ' +     
+     A                                      'Text                ' +            
+     A                                      '--------------------')             
+      *                                                                         
+     A            P1USER        10A         TEXT('Update User. . . . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('Update              ' +     
+     A                                      'User                ' +            
+     A                                      '----------')                       
+      *                                                                         
+     A            P1PID         10A         TEXT('Program ID . . . . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('                    ' +     
+     A                                      'Program             ' +            
+     A                                      '----------')                       
+      *                                                                         
+     A            P1JOBN        10A         TEXT('Update Job Name. . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('Update              ' +     
+     A                                      'Job Name            ' +            
+     A                                      '----------')                       
+      *                                                                         
+     A            P1UPMJ         6S 0       TEXT('Date Updated . . . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('Date                ' +     
+     A                                      'Updated             ' +            
+     A                                      '-------')                          
+      *                                                                         
+     A            P1TDAY         6S 0       TEXT('Time Updated . . . . . . . . +
+     A                                      . . . . . .')                       
+     A                                      COLHDG('Time                ' +     
+     A                                      'Updated             ' +            
+     A                                      '-------')                          
+      **                                                                        
