@@ -5,9 +5,6 @@
       *  CC27455 09.01.2009 Charlie McLean                                      
       *          Project started                                                
       *                                                                         
-      *  T23354  11.11.2013 Charlie McLean                                      
-      *          repurposed for re-write                                        
-      *                                                                         
       *----------------------------------------------------------------         
       *                                                                         
      A          R ICP1001                   PFILE(FCP1001)                      

@@ -5,12 +5,6 @@
 /*  CC27295 08.10.2009 Charlie McLean                                */         
 /*          Project started                                          */         
 /*                                                                   */         
-/*  CC27460 09.04.2009 Charlie McLean                                */         
-/*          Added JCP1002                                            */         
-/*                                                                   */         
-/*  T23253  08.08.2011 Charlie McLean                                */         
-/*          Added JCP1003                                            */         
-/*                                                                   */         
 /*-------------------------------------------------------------------*/         
                                                                                 
  START:      PGM                                                                
