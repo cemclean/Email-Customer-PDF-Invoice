@@ -1,0 +1,11 @@
+H QM4 05 Q 01 E V W E R 01 03 12/07/31 10:06                                   
+V 1001 050 PDF Invoice Failure to Mail Report                                  
+V 5001 004 *HEX                                                                
+SELECT                                                                         
+  ALL       T01.P1AN8, T01.P1DOCO, T01.P1DOC, T01.P1PRTF, T01.P1RTN, T01.P1RTXT
+,           T01.P1USER, T01.P1PID, T01.P1JOBN, T02.GREDTE, T01.P1TDAY          
+  FROM      JDEDTAAP/FCP1001 T01,                                              
+            JDEDTAAP/F56365 T02                                                
+  WHERE     T02.JULDTE = P1UPMJ                                                
+    AND(    P1PRTF = '1'                                                       
+    OR      P1RTN NOT IN ('  ', '10'))                                         

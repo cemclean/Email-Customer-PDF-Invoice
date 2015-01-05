@@ -11,13 +11,6 @@
       * T23312  12.07.2012 Charlie McLean                                                           
       *         Chg'd qty to 30 attachments                                                         
       *                                                                                             
-      * T23354  11.11.2013 Charlie McLean                                                           
-      *         Re-wrote main section using new logicals                                            
-      *         chg'd max attachments to 15 from 30                                                 
-      *         11.18.2103 Charlie McLean                                                           
-      *         chg'd DOU %EOF to DW NOT %EOF so job will not                                       
-      *         err when no records are present                                                     
-      *                                                                                             
       *-----------------------------------------------------------------                            
      h option(*srcstmt:*nodebugio)                                                                  
       *         P1 PDF invoice ready to mail (P1FLAG = P)                                           

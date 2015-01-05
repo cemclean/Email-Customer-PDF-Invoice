@@ -1,0 +1,184 @@
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+5722QU1  V5R4M0  060210         IBM Query for iSeries        S105BRYM  1/05/15   10:00:37         Page    1
+
+
+   Query . . . . . . . . . . . . . . . . . CP1003
+     Library . . . . . . . . . . . . . . . SERUSRQRY
+   Query text  . . . . . . . . . . . . . . PDF Invoice Failure to Mail Report
+   Query CCSID . . . . . . . . . . . . . .    37
+   Query language id . . . . . . . . . . . ENU
+   Query country or region id  . . . . . . US
+   Collating sequence  . . . . . . . . . . Hexadecimal
+
+
+
+
+
+   Processing options
+     Use rounding  . . . . . . . . . . . . Yes (default)
+     Ignore decimal data errors  . . . . . No (default)
+     Ignore substitution warnings  . . . . Yes
+     Use collating for all compares  . . . Yes
+
+
+
+Selected files
+
+   ID     File           Library       Member        Record Format
+
+   T01    FCP1001        JDEDTAAP      *FIRST        ICP1001
+   T02    F56365         JDEDTAAP      *FIRST        I56365
+
+
+Join tests
+
+   Type of join  . . . . . . . . . . . . . Matched records with primary file
+
+   Field              Test              Field
+
+   T02.JULDTE         EQ                P1UPMJ
+
+
+Select record tests
+
+   AND/OR   Field             Test     Value (Field, Numbers, or 'Characters')
+
+            P1PRTF            EQ       '1'
+    OR      P1RTN             NLIST    '  ' '10'
+
+
+Ordering of selected fields
+
+   Field           Sort      Ascending/  Break  Field
+   Name            Priority  Descending  Level  Text
+
+   T01.P1AN8                                    Bill To Customer . . . . . . . . . . . .
+   T01.P1DOCO                                   Order. . . . . . . . . . . . . . . . . .
+   T01.P1DOC                                    Invoice. . . . . . . . . . . . . . . . .
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+                                 IBM Query for iSeries                  1/05/15   10:00:37         Page    2
+
+
+Ordering of selected fields (continued)
+
+   Field           Sort      Ascending/  Break  Field
+   Name            Priority  Descending  Level  Text
+
+   T01.P1PRTF                                   Email Flag . . . . . . . . . . . . . . .
+   T01.P1RTN                                    Return Code. . . . . . . . . . . . . . .
+   T01.P1RTXT                                   Return Text. . . . . . . . . . . . . . .
+   T01.P1USER                                   Update User. . . . . . . . . . . . . . .
+   T01.P1PID                                    Program ID . . . . . . . . . . . . . . .
+   T01.P1JOBN                                   Update Job Name. . . . . . . . . . . . .
+   T02.GREDTE                                   Gregorian Date
+   T01.P1TDAY                                   Time Updated . . . . . . . . . . . . . .
+
+
+Report column formatting and summary functions
+   Summary functions:  1-Total, 2-Average, 3-Minimum, 4-Maximum, 5-Count           Overrides
+   Field           Summary    Column                                Dec  Null       Dec  Numeric
+   Name            Functions  Spacing  Column Headings         Len  Pos  Cap   Len  Pos  Editing
+
+   T01.P1AN8                  0                                  8    0                     Yes
+                                       Bill To
+                                       --------
+   T01.P1DOCO                 2                                  8    0                     Yes
+                                       Order
+                                       --------
+   T01.P1DOC                  2                                  8    0                     Yes
+                                       Invoice
+                                       --------
+   T01.P1PRTF                 2                                  1
+                                       P
+                                       -
+   T01.P1RTN                  2        Rtn                       2
+                                       Cde
+                                       ---
+   T01.P1RTXT                 2        Return                   40
+                                       Text
+                                       --------------------
+   T01.P1USER                 2        Update                   10
+                                       User
+                                       ----------
+   T01.P1PID                  2                                 10
+                                       Program
+                                       ----------
+   T01.P1JOBN                 2        Update                   10
+                                       Job Name
+                                       ----------
+   T02.GREDTE                 2        Date                      8
+                                       Updated
+                                       --------
+   T01.P1TDAY                 2        Time                      6    0                     Yes
+                                       Updated
+                                       -------
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+                                 IBM Query for iSeries                  1/05/15   10:00:37         Page    3
+
+
+Selected output attributes
+
+   Output type . . . . . . . . . . . . . . Printer
+   Form of output  . . . . . . . . . . . . Detail
+   Line wrapping . . . . . . . . . . . . . No
+
+
+
+Printer Output
+
+   Printer device  . . . . . . . . . . . . PRT11
+   Report size
+     Length  . . . . . . . . . . . . . . .  66 (default)
+     Width . . . . . . . . . . . . . . . . 198
+   Report start line . . . . . . . . . . .   6
+   Report end line . . . . . . . . . . . .  60
+   Report line spacing . . . . . . . . . . Single space
+   Print definition  . . . . . . . . . . . No
+
+
+
+Printer Spooled Output
+
+   Spool the output  . . . . . . . . . . . (Defaults to value in print file, QPQUPRFIL)
+   Form type . . . . . . . . . . . . . . . (Defaults to value in print file, QPQUPRFIL)
+   Copies  . . . . . . . . . . . . . . . .   1
+   Hold  . . . . . . . . . . . . . . . . . (Defaults to value in print file, QPQUPRFIL)
+
+
+
+Cover Page
+
+   Print cover page  . . . . . . . . . . . No
+     Cover page title
+
+
+
+Page headings and footings
+
+   Print standard page heading . . . . . . Yes
+
+     Page heading
+       Email PDF Invoice
+       Failure to Send
+
+     Page footing
+       seruusrqry/CP1003
+
+
+
+                 * * * * *    E N D   O F   Q U E R Y   P R I N T   * * * * *

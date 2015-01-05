@@ -26,12 +26,6 @@
  * CC27295 07.06.2009 Charlie McLean                                  +         
  *         Project started                                            +         
  *                                                                    +         
- * CC27512 09.19.2009 Charlie McLean                                  +         
- *         Added PDF log file for later batch emailing                +         
- *                                                                    +         
- * CC27587 10.15.2009 Charlie McLean                                  +         
- *         Added invoice doc type                                     +         
- *                                                                    +         
  *-------------------------------------------------------------------*/         
                                                                                 
  START:      PGM                                                                

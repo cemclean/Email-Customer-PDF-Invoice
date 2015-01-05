@@ -10,13 +10,6 @@
       * CC27512 09.19.2009 Charlie McLean                                       
       *         Project started                                                 
       *                                                                         
-      * CC27587 10.15.2009 Charlie McLean                                       
-      *         Added no-email based on invoice doc type (parm)                 
-      *         and look up to UDC 42 NM for list of no mail types              
-      *                                                                         
-      * CC27617 10.28.2009 Charlie McLean                                       
-      *         Set on print flag for all no-mail invoice types                 
-      *                                                                         
       *--------------------------------------------------------------           
       *                                                                         
 27587 *           DR user defined codes                                         
